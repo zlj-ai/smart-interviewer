@@ -1,0 +1,19 @@
+/*
+ * Smart Interviewer - 智能面试平台
+ */
+
+pluginManagement {
+    repositories {
+        maven { url = uri('https://maven.aliyun.com/repository/public/') }
+        maven { url = uri('https://maven.aliyun.com/repository/gradle-plugin/') }
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    // Apply the foojay-resolver plugin to allow automatic download of JDKs
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'smart-interviewer'
+include('app')
