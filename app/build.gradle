@@ -90,8 +90,38 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'rag-eval'
+    }
     jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
+
+// RAG 评估任务：仅 rag-eval 标签，需 RUN_RAG_EVAL=true 与有效 LLM key（付费调用防误触）
+// 运行方式：RUN_RAG_EVAL=true ./gradlew :app:ragEvaluation --no-daemon
+tasks.register('ragEvaluation', Test) {
+    description = 'RAG 评估基线（检索命中率 / 引用率 / 耗时，需真实 LLM）'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'rag-eval'
+    }
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+    systemProperty 'ragEval.reportDir', layout.buildDirectory.dir('reports/rag-eval').get().asFile.absolutePath
+    outputs.upToDateWhen { false }
+    def envFile = rootProject.file('.env')
+    if (envFile.exists()) {
+        envFile.eachLine { line ->
+            def trimmed = line.trim()
+            if (trimmed && !trimmed.startsWith('#') && trimmed.contains('=')) {
+                def (key, value) = trimmed.split('=', 2)
+                if (System.getenv(key) == null) { environment key, value }
+            }
+        }
+    }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
 
 // 将仓库根目录 .env 注入 bootRun，便于本地加载 AI_API_KEY 等变量（Gradle 进程默认不读 .env）

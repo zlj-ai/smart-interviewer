@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "question": "volatile 在 Java 中保证什么？",
+      "expectedKeywords": ["可见性", "重排序"],
+      "sourceKeywords": ["volatile"]
+    },
+    {
+      "question": "synchronized 关键字有什么作用？",
+      "expectedKeywords": ["互斥", "原子性"],
+      "sourceKeywords": ["Synchronized"]
+    },
+    {
+      "question": "什么是 CAS？它有什么特点？",
+      "expectedKeywords": ["无锁", "自旋"],
+      "sourceKeywords": ["CAS"]
+    },
+    {
+      "question": "Java 内存模型（JMM）解决什么问题？",
+      "expectedKeywords": ["内存模型", "可见性"],
+      "sourceKeywords": ["JMM"]
+    },
+    {
+      "question": "ThreadLocal 适合什么场景？",
+      "expectedKeywords": ["线程封闭"],
+      "sourceKeywords": ["ThreadLocal"]
+    }
+  ]
+}
