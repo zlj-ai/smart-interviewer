@@ -1,6 +1,6 @@
 # Smart Interviewer Agent Rules
 
-Spring Boot 4.1.0 + Java 25 + Spring AI 2.0.0 + React 智能面试平台，个人独立实现。
+Spring Boot 4.1.0 + Java 25 + Spring AI 2.0.0 + Vue 3 智能面试平台，个人独立实现。
 
 本文件是跨工具 Agent 入口，只放长期有效、代码里不容易直接推断、猜错会影响结果的规则。
 
@@ -10,7 +10,7 @@ Spring Boot 4.1.0 + Java 25 + Spring AI 2.0.0 + React 智能面试平台，个�
 - Database: PostgreSQL + pgvector，向量维度 1024，距离类型 COSINE
 - Cache & async: Redis / Redisson / Redis Stream
 - Mapping & export: MapStruct / iText 8 / SpringDoc OpenAPI
-- Frontend: React 18 / TypeScript / Vite / TailwindCSS 4，代码在 `frontend/`
+- Frontend: Vue 3 / TypeScript / Vite / TailwindCSS 4，代码在 `frontend/`
 
 ## Commands
 
@@ -54,7 +54,7 @@ docker compose -f docker-compose.dev.yml up -d
 - `app/src/main/java/com/smartinterview/modules/`: 业务模块，每个模块自包含 MVC 分层。
 - `app/src/main/resources/prompts/`: StringTemplate Prompt 模板。
 - `app/src/main/resources/db/migration/`: Flyway 迁移脚本，schema 变更只走这里。
-- `frontend/src/`: React 前端页面、组件、API 客户端和类型定义。
+- `frontend/src/`: Vue 3 前端页面、组件、API 客户端和类型定义。
 
 ## Architecture
 
@@ -94,11 +94,12 @@ docker compose -f docker-compose.dev.yml up -d
 
 ## Frontend Rules
 
-- API 调用集中在 `frontend/src/api/`，复用 `request.ts` 的 Axios 实例。
+- Vue 3 Composition API + `<script setup>`，状态管理用 Pinia，路由用 Vue Router。
+- API 调用集中在 `frontend/src/api/`，复用 `request.ts` 的 Axios 实例（含 401 静默刷新）。
 - 类型定义放在 `frontend/src/types/`，不要在页面里重复定义共享接口。
 - 页面放在 `frontend/src/pages/`，可复用 UI 放在 `frontend/src/components/`。
 - 路由常量放在 `frontend/src/constants/routes.ts`。
-- 组件交互优先使用现有设计语言和 `lucide-react` 图标。
+- 组件交互优先使用现有设计语言和 `lucide-vue-next` 图标。
 
 ## Testing
 
