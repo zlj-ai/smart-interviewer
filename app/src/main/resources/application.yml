@@ -7,6 +7,9 @@ spring:
   threads:
     virtual:
       enabled: true
+  autoconfigure:
+    # 向量存储使用 AiModelConfig 中的手动装配（显式维度/距离类型），排除自动配置避免 bean 冲突
+    exclude: org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:smart_interviewer}
     username: ${POSTGRES_USER:postgres}
@@ -37,6 +40,8 @@ app:
 
   ai:
     default-provider: ${AI_DEFAULT_PROVIDER:dashscope}
+    embedding-model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
+    embedding-dimensions: 1024
     providers:
       - name: dashscope
         api-key: ${AI_API_KEY:}
@@ -45,6 +50,15 @@ app:
 
   interview:
     question-count: 5
+
+  knowledge:
+    chunk-size: 800
+    chunk-overlap: 100
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 management:
   endpoints:

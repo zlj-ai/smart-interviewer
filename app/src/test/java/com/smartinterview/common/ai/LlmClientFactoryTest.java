@@ -14,6 +14,8 @@ class LlmClientFactoryTest {
 
   private final AiProperties properties = new AiProperties(
       "primary",
+      "text-embedding-test",
+      1024,
       List.of(
           new AiProperties.Provider("primary", "sk-test-primary", "http://localhost:18080", "test-model"),
           new AiProperties.Provider("backup", "sk-test-backup", "http://localhost:18081", "backup-model")

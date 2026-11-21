@@ -44,6 +44,12 @@ dependencies {
 
     // Spring AI 2.0 - OpenAI 兼容模式接入
     implementation 'org.springframework.ai:spring-ai-starter-model-openai:2.0.0'
+    // Spring AI 2.0 - pgvector 向量存储（RAG 知识库）
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector:2.0.0'
+
+    // Apache Tika - 文档解析（知识库上传）
+    implementation 'org.apache.tika:tika-core:2.9.2'
+    implementation 'org.apache.tika:tika-parsers-standard-package:2.9.2'
 
     // Redisson - Redis 客户端（缓存 / 分布式锁 / Stream）
     implementation 'org.redisson:redisson-spring-boot-starter:4.0.0'
