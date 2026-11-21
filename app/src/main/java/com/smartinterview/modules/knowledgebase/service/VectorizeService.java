@@ -29,6 +29,7 @@ public class VectorizeService {
   public static final String METADATA_KB_ID = "kbId";
   public static final String METADATA_DOC_ID = "docId";
   public static final String METADATA_USER_ID = "userId";
+  public static final String METADATA_FILENAME = "filename";
   public static final String METADATA_CHUNK = "chunk";
 
   private final KbDocumentRepository documentRepository;
@@ -58,6 +59,7 @@ public class VectorizeService {
           .metadata(METADATA_KB_ID, String.valueOf(doc.getKbId()))
           .metadata(METADATA_DOC_ID, String.valueOf(docId))
           .metadata(METADATA_USER_ID, String.valueOf(doc.getUserId()))
+          .metadata(METADATA_FILENAME, doc.getFilename())
           .metadata(METADATA_CHUNK, i)
           .build());
     }
