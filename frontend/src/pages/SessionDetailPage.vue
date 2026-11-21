@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { Loader2, Lightbulb, Sparkles } from 'lucide-vue-next'
 
 import { getAnswer, getSession, listQuestions, submitAnswer } from '@/api/sessions'
+import { regenerateQuestions } from '@/api/sessions'
 import StatusPill from '@/components/StatusPill.vue'
 import type { AnswerResponse, QuestionResponse, SessionResponse } from '@/types/api'
 
@@ -17,6 +18,7 @@ const answerText = ref('')
 const answer = ref<AnswerResponse | null>(null)
 const polling = ref(false)
 const submitting = ref(false)
+const regenerating = ref(false)
 const error = ref('')
 
 const selectedQuestion = computed(
@@ -73,6 +75,20 @@ async function onSubmit(): Promise<void> {
   }
 }
 
+async function onRegenerate(): Promise<void> {
+  regenerating.value = true
+  error.value = ''
+  try {
+    session.value = await regenerateQuestions(sessionId)
+    questions.value = []
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { message?: string } } }).response?.data?.message
+      ?? '重新生成失败'
+  } finally {
+    regenerating.value = false
+  }
+}
+
 async function pollEvaluation(questionId: number): Promise<void> {
   polling.value = true
   try {
@@ -97,7 +113,17 @@ onMounted(load)
     <div class="flex items-center gap-3">
       <h1 class="text-lg font-semibold text-teal-950">面试 #{{ sessionId }}</h1>
       <StatusPill v-if="session" :status="session.status" />
+      <button
+        v-if="session && (session.status === 'FAILED' || session.status === 'COMPLETED')"
+        :disabled="regenerating"
+        class="ml-auto text-sm text-teal-700 border border-teal-200 rounded-lg px-3 py-1.5 transition hover:bg-teal-50 disabled:opacity-50"
+        @click="onRegenerate"
+      >
+        {{ regenerating ? '重新生成中…' : '重新生成题目' }}
+      </button>
     </div>
+
+    <p v-if="error" class="rounded-xl bg-red-50 text-red-600 text-sm px-3 py-2 border border-red-100">{{ error }}</p>
 
     <div class="grid lg:grid-cols-5 gap-5">
       <section class="lg:col-span-2 card p-4">
@@ -108,7 +134,7 @@ onMounted(load)
         <ul class="space-y-1">
           <li v-for="q in questions" :key="q.id">
             <button
-              class="w-full text-left p-3 rounded-xl transition"
+              class="w-full text-left p-3 rounded-lg transition"
               :class="selectedId === q.id ? 'bg-teal-50 ring-1 ring-teal-200' : 'hover:bg-teal-50/60'"
               @click="select(q)"
             >

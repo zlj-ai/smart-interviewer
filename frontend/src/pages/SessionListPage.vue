@@ -13,6 +13,7 @@ const sessions = ref<Awaited<ReturnType<typeof listSessions>> | null>(null)
 const direction = ref('JAVA_BACKEND')
 const difficulty = ref('MEDIUM')
 const creating = ref(false)
+const createError = ref('')
 const page = ref(0)
 const totalPages = ref(1)
 const loading = ref(true)
@@ -40,10 +41,14 @@ async function load(): Promise<void> {
 
 async function onCreate(): Promise<void> {
   creating.value = true
+  createError.value = ''
   try {
     const requestId = crypto.randomUUID()
     const session = await createSession(requestId, direction.value, difficulty.value)
     await router.push(routes.sessionDetail(session.id))
+  } catch (e: unknown) {
+    createError.value = (e as { response?: { data?: { message?: string } } }).response?.data?.message
+      ?? '创建失败，请稍后重试'
   } finally {
     creating.value = false
   }
@@ -88,6 +93,7 @@ onMounted(load)
           {{ creating ? '创建中…' : '创建面试' }}
         </button>
       </div>
+      <p v-if="createError" class="rounded-lg bg-red-50 text-red-600 text-sm px-3 py-2 border border-red-100">{{ createError }}</p>
       <p class="text-xs text-teal-900/50">
         创建后由大模型异步生成题目，生成期间状态为「题目生成中」，完成后刷新即可看到题目。
       </p>
