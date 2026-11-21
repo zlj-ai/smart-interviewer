@@ -15,6 +15,7 @@ import com.smartinterview.modules.interview.repository.InterviewAnswerRepository
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,10 +54,13 @@ public class AnswerEvaluationService {
 
     EvaluationResult result = outputInvoker.invoke(prompt, EvaluationResult.class, this::callModel);
     int score = Math.max(0, Math.min(100, result.score() == null ? 0 : result.score()));
+    // 数组结果落库拼接为文本（DB 列为文本，前端按整段展示）
+    String strengths = joinLines(result.strengths());
+    String improvements = joinLines(result.improvements());
 
     int updated = transactionalExecutor.inTransaction(() ->
         answerRepository.updateEvaluationFenced(answerId, attempt, score,
-            result.feedback(), result.strengths(), result.improvements()));
+            result.feedback(), strengths, improvements));
     if (updated == 0) {
       // fencing 命中：评估期间用户重新提交过回答，本任务对应旧版本，结果丢弃
       meterRegistry.counter("interview_answer_evaluated_total", "status", "fencing_discarded").increment();
@@ -66,6 +70,10 @@ public class AnswerEvaluationService {
     completeSessionIfAllEvaluated(session.getId());
     meterRegistry.counter("interview_answer_evaluated_total", "status", "evaluated").increment();
     log.info("回答评估完成: answerId={}, score={}", answerId, score);
+  }
+
+  private String joinLines(List<String> items) {
+    return items == null || items.isEmpty() ? null : String.join("\n", items);
   }
 
   public void markFailed(Long answerId, int attempt) {

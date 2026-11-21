@@ -104,7 +104,7 @@ class AnswerEvaluationServiceTest {
     lenient().when(sessionRepository.findById(SESSION_ID))
         .thenReturn(Optional.of(session(InterviewSessionStatus.IN_PROGRESS)));
     lenient().when(outputInvoker.invoke(anyString(), eq(EvaluationResult.class), any()))
-        .thenReturn(new EvaluationResult(85, "整体不错", "原理清晰", "缺场景举例"));
+        .thenReturn(new EvaluationResult(85, "整体不错", java.util.List.of("原理清晰"), java.util.List.of("缺场景举例")));
   }
 
   @Test
@@ -112,7 +112,7 @@ class AnswerEvaluationServiceTest {
   void successWithFencedUpdate() {
     happyPathStubs();
     when(outputInvoker.invoke(anyString(), eq(EvaluationResult.class), any()))
-        .thenReturn(new EvaluationResult(150, "整体不错", "原理清晰", "缺场景举例"));
+        .thenReturn(new EvaluationResult(150, "整体不错", java.util.List.of("原理清晰"), java.util.List.of("缺场景举例")));
     when(answerRepository.updateEvaluationFenced(eq(ANSWER_ID), eq(ATTEMPT), eq(100),
         eq("整体不错"), eq("原理清晰"), eq("缺场景举例"))).thenReturn(1);
     when(answerRepository.countBySessionIdAndStatus(SESSION_ID, AnswerStatus.EVALUATED))
