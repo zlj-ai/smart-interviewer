@@ -38,7 +38,7 @@ docker compose -f docker-compose.dev.yml up -d
 - `common/transaction`: 事务执行模板。
 - `common/result` / `common/exception`: 统一响应与异常体系。
 - `modules/user`: 用户、认证、RBAC。
-- `modules/interview`: 会话、题目、幂等、状态机。
+- `modules/interview`: 会话、题目、回答与评估、幂等、状态机、SSE 流式追问。
 - 后续模块：知识库与 RAG、简历分析、语音面试、可观测与压测、前端。
 
 ## Change Discipline

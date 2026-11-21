@@ -22,6 +22,7 @@ import com.smartinterview.modules.interview.model.InterviewQuestionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.model.QuestionDraft;
+import com.smartinterview.modules.interview.repository.InterviewAnswerRepository;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
 import java.util.List;
@@ -45,6 +46,8 @@ class QuestionGenerationServiceTest {
   @Mock
   private InterviewQuestionRepository questionRepository;
   @Mock
+  private InterviewAnswerRepository answerRepository;
+  @Mock
   private StructuredOutputInvoker outputInvoker;
   @Mock
   private TransactionalExecutor transactionalExecutor;
@@ -55,8 +58,8 @@ class QuestionGenerationServiceTest {
 
   @BeforeEach
   void setUp() {
-    service = new QuestionGenerationService(sessionRepository, questionRepository, outputInvoker,
-        transactionalExecutor, new InterviewProperties(5), llmClientFactory);
+    service = new QuestionGenerationService(sessionRepository, questionRepository, answerRepository,
+        outputInvoker, transactionalExecutor, new InterviewProperties(5), llmClientFactory);
     lenient().when(transactionalExecutor.inTransaction(ArgumentMatchers.<Supplier<Object>>any()))
         .thenAnswer(invocation -> ((Supplier<Object>) invocation.getArgument(0)).get());
   }

@@ -8,5 +8,7 @@ public interface InterviewQuestionRepository extends JpaRepository<InterviewQues
 
   List<InterviewQuestionEntity> findBySessionIdOrderBySeqAsc(Long sessionId);
 
+  long countBySessionId(Long sessionId);
+
   void deleteBySessionId(Long sessionId);
 }

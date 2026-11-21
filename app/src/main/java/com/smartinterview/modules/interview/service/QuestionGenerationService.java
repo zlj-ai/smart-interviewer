@@ -12,6 +12,7 @@ import com.smartinterview.modules.interview.model.InterviewQuestionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.model.QuestionDraft;
+import com.smartinterview.modules.interview.repository.InterviewAnswerRepository;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class QuestionGenerationService {
 
   private final InterviewSessionRepository sessionRepository;
   private final InterviewQuestionRepository questionRepository;
+  private final InterviewAnswerRepository answerRepository;
   private final StructuredOutputInvoker outputInvoker;
   private final TransactionalExecutor transactionalExecutor;
   private final InterviewProperties properties;
@@ -64,6 +66,8 @@ public class QuestionGenerationService {
     }
 
     transactionalExecutor.inTransaction(() -> {
+      // 重新生成会连带换题：先删回答再删题目（FK 顺序），旧回答与评估一并作废
+      answerRepository.deleteBySessionId(sessionId);
       questionRepository.deleteBySessionId(sessionId);
       List<InterviewQuestionEntity> questions = new ArrayList<>(drafts.size());
       for (int i = 0; i < drafts.size(); i++) {

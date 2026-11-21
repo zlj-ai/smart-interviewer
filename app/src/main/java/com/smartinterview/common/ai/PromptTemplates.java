@@ -19,7 +19,13 @@ public final class PromptTemplates {
 
   private static final String BASE_PATH = "prompts/";
   private static final Map<String, String> TEMPLATE_CACHE = new ConcurrentHashMap<>();
-  private static final TemplateRenderer RENDERER = StTemplateRenderer.builder().build();
+  /**
+   * 使用尖括号定界符：模板正文中的 JSON 示例花括号不会与表达式冲突。
+   */
+  private static final TemplateRenderer RENDERER = StTemplateRenderer.builder()
+      .startDelimiterToken('<')
+      .endDelimiterToken('>')
+      .build();
 
   private PromptTemplates() {
   }

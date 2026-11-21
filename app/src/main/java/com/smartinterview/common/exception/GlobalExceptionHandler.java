@@ -2,6 +2,7 @@ package com.smartinterview.common.exception;
 
 import com.smartinterview.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
         .orElse("参数校验失败");
     log.warn("参数校验失败: {}", message);
     return Result.error(ErrorCode.PARAM_INVALID.getCode(), message);
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public Result<Void> handleUnreadableBody(HttpMessageNotReadableException e) {
+    log.warn("请求体解析失败: {}", e.getMessage());
+    return Result.error(ErrorCode.PARAM_INVALID.getCode(), "请求体格式错误（请使用 UTF-8 编码的合法 JSON）");
   }
 
   @ExceptionHandler(Exception.class)
