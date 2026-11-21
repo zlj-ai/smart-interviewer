@@ -24,12 +24,9 @@ spring:
       port: ${REDIS_PORT:6379}
 
   ai:
+    # 保留该属性避免 OpenAI 自动配置在无 key 环境启动失败；业务实际走 app.ai 多 Provider 注册
     openai:
       api-key: ${AI_API_KEY:no-key}
-      base-url: ${AI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
-      chat:
-        options:
-          model: ${AI_CHAT_MODEL:qwen-plus}
 
 app:
   jwt:
@@ -37,6 +34,14 @@ app:
     secret: ${JWT_SECRET:dev-only-jwt-secret-0123456789abcdef-change-me-in-env}
     access-ttl: 2h
     refresh-ttl: 168h
+
+  ai:
+    default-provider: ${AI_DEFAULT_PROVIDER:dashscope}
+    providers:
+      - name: dashscope
+        api-key: ${AI_API_KEY:}
+        base-url: ${AI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        model: ${AI_CHAT_MODEL:qwen-plus}
 
 management:
   endpoints:
