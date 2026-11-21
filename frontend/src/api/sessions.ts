@@ -31,6 +31,13 @@ export async function listQuestions(sessionId: number): Promise<QuestionResponse
   return res.data.data as QuestionResponse[]
 }
 
+export async function regenerateQuestions(sessionId: number): Promise<SessionResponse> {
+  const res = await api.post<Result<SessionResponse>>(
+    `/interview/sessions/${sessionId}/questions/regenerate`,
+  )
+  return res.data.data as SessionResponse
+}
+
 export async function submitAnswer(
   sessionId: number,
   questionId: number,
