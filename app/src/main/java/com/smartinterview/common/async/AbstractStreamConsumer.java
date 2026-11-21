@@ -249,6 +249,17 @@ public abstract class AbstractStreamConsumer<T> implements SmartLifecycle {
 
   private void handleFailure(RStream<String, String> stream, StreamMessageId id, T data,
                              int retryCount, Exception cause) {
+    if (!isRetryable(cause)) {
+      log.error("确定性错误（认证/账户/参数类），跳过重试直接落最终失败: stream={}, id={}, {}",
+          streamKey(), id, cause.getMessage());
+      try {
+        onMaxRetriesExceeded(data);
+      } catch (Exception e) {
+        log.error("最终失败状态落库异常: stream={}, id={}, {}", streamKey(), id, e.getMessage());
+      }
+      stream.ack(groupName(), id);
+      return;
+    }
     if (retryCount < MAX_RETRIES) {
       log.warn("任务处理失败，投递第 {} 次重试: stream={}, id={}, {}",
           retryCount + 1, streamKey(), id, cause.getMessage());
@@ -265,6 +276,14 @@ public abstract class AbstractStreamConsumer<T> implements SmartLifecycle {
       log.error("最终失败状态落库异常: stream={}, id={}, {}", streamKey(), id, e.getMessage());
     }
     stream.ack(groupName(), id);
+  }
+
+  /**
+   * 失败是否可重试。默认对认证/账户/参数类确定性错误（欠费、key 无效等）
+   * 返回 false 以跳过重试；子类可覆盖扩展自定义分类。
+   */
+  protected boolean isRetryable(Throwable error) {
+    return !NonRetryableFailure.isNonRetryable(error);
   }
 
   private int parseRetryCount(Map<String, String> body) {

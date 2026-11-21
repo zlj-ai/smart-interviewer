@@ -143,6 +143,20 @@ class AbstractStreamConsumerTest {
   }
 
   @Test
+  @DisplayName("确定性错误（欠费/认证类 SDK 异常）：跳过重试直达最终失败")
+  void nonRetryableSkipsRetries() {
+    consumer.businessError = new com.openai.errors.OpenAIException(
+        "400: Access denied",
+        new NonRetryableFailureTest.SdkServiceException("overdue", 400));
+
+    consumer.processRecord(new StreamMessageId(1, 6), body("task-6", 0));
+
+    assertThat(consumer.finalFailed).containsExactly("task-6");
+    verify(producer, never()).publish(anyString(), any(), anyInt());
+    verify(stream).ack("test-group", new StreamMessageId(1, 6));
+  }
+
+  @Test
   @DisplayName("重试超限：执行最终失败处理并 ACK，不再投递")
   void exhaustedRetriesMarkFinalFailure() {
     consumer.businessError = new RuntimeException("boom");
