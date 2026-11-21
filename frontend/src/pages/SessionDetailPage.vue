@@ -23,19 +23,22 @@ const selectedQuestion = computed(
   () => questions.value.find((q) => q.id === selectedId.value) ?? null,
 )
 
-const scoreColor = computed(() => {
+const scoreStyle = computed(() => {
   const score = answer.value?.score
   if (score === null || score === undefined) {
-    return 'text-slate-400'
+    return 'text-zinc-600'
   }
   if (score >= 80) {
-    return 'text-emerald-500'
+    return 'text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.35)]'
   }
   if (score >= 60) {
-    return 'text-amber-500'
+    return 'text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.3)]'
   }
-  return 'text-rose-500'
+  return 'text-rose-400 drop-shadow-[0_0_12px_rgba(251,113,133,0.3)]'
 })
+
+const inputClass =
+  'w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-violet-500/60 focus:ring-4 focus:ring-violet-500/10'
 
 async function load(): Promise<void> {
   session.value = await getSession(sessionId)
@@ -95,26 +98,28 @@ onMounted(load)
 <template>
   <div class="space-y-5">
     <div class="flex items-center gap-3">
-      <h1 class="text-lg font-semibold text-slate-800">面试 #{{ sessionId }}</h1>
+      <h1 class="text-lg font-semibold text-zinc-100">面试 #{{ sessionId }}</h1>
       <StatusPill v-if="session" :status="session.status" />
     </div>
 
     <div class="grid lg:grid-cols-5 gap-5">
-      <section class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-4">
-        <h2 class="font-semibold text-slate-800 mb-3 px-1">题目</h2>
-        <p v-if="questions.length === 0" class="text-sm text-slate-400 px-1 py-4">
+      <section class="lg:col-span-2 rounded-2xl bg-zinc-900/70 border border-white/[0.06] p-4">
+        <h2 class="font-semibold text-zinc-100 mb-3 px-1">题目</h2>
+        <p v-if="questions.length === 0" class="text-sm text-zinc-500 px-1 py-4">
           题目尚未生成（异步生成中或生成失败，可稍后刷新页面）。
         </p>
         <ul class="space-y-1">
           <li v-for="q in questions" :key="q.id">
             <button
               class="w-full text-left p-3 rounded-lg transition"
-              :class="selectedId === q.id ? 'bg-indigo-50 ring-1 ring-indigo-200' : 'hover:bg-slate-50'"
+              :class="selectedId === q.id
+                ? 'bg-violet-500/10 ring-1 ring-violet-500/40'
+                : 'hover:bg-white/[0.04]'"
               @click="select(q)"
             >
-              <span class="font-mono text-xs text-slate-400 mr-1">{{ q.seq }}.</span>
-              <span class="text-sm text-slate-800">{{ q.question }}</span>
-              <span v-if="q.skillTag" class="inline-block ml-2 text-xs text-indigo-500 bg-indigo-50 rounded px-1.5 py-0.5">
+              <span class="font-mono text-xs text-zinc-600 mr-1">{{ q.seq }}.</span>
+              <span class="text-sm text-zinc-200">{{ q.question }}</span>
+              <span v-if="q.skillTag" class="inline-block ml-2 text-xs text-violet-300 bg-violet-500/10 rounded px-1.5 py-0.5">
                 {{ q.skillTag }}
               </span>
             </button>
@@ -123,54 +128,56 @@ onMounted(load)
       </section>
 
       <section class="lg:col-span-3 space-y-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+        <div class="rounded-2xl bg-zinc-900/70 border border-white/[0.06] p-5 space-y-3">
           <template v-if="selectedQuestion">
-            <h2 class="font-semibold text-slate-800">{{ selectedQuestion.question }}</h2>
+            <h2 class="font-semibold text-zinc-100">{{ selectedQuestion.question }}</h2>
             <textarea
               v-model="answerText"
               rows="9"
-              class="w-full rounded-lg border border-slate-200 p-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 resize-y"
+              :class="inputClass"
               placeholder="写下你的回答…"
             />
             <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-400">{{ answerText.length }} 字符</span>
+              <span class="text-xs text-zinc-600">{{ answerText.length }} 字符</span>
               <button
                 :disabled="submitting || polling || !answerText.trim()"
-                class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 text-sm font-medium transition hover:opacity-95 disabled:opacity-50 flex items-center gap-2"
+                class="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-5 py-2 text-sm font-medium shadow-lg shadow-violet-600/30 transition hover:brightness-110 disabled:opacity-50 flex items-center gap-2"
                 @click="onSubmit"
               >
                 <Loader2 v-if="submitting || polling" class="w-4 h-4 animate-spin" />
                 {{ polling ? '评估中…' : '提交回答' }}
               </button>
             </div>
-            <p v-if="error" class="rounded-lg bg-rose-50 text-rose-600 text-sm px-3 py-2">{{ error }}</p>
+            <p v-if="error" class="rounded-lg bg-rose-500/10 text-rose-400 text-sm px-3 py-2 ring-1 ring-rose-500/30">
+              {{ error }}
+            </p>
           </template>
-          <p v-else class="text-sm text-slate-400 py-6 text-center">从左侧选择一道题目开始作答。</p>
+          <p v-else class="text-sm text-zinc-500 py-6 text-center">从左侧选择一道题目开始作答。</p>
         </div>
 
-        <div v-if="answer" class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <div v-if="answer" class="rounded-2xl bg-zinc-900/70 border border-white/[0.06] p-5 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-slate-800">评估结果</h3>
+            <h3 class="font-semibold text-zinc-100">评估结果</h3>
             <StatusPill :status="answer.status" />
           </div>
 
           <div v-if="answer.status === 'EVALUATED'" class="flex items-center gap-6">
             <div class="text-center">
-              <p :class="['text-4xl font-bold', scoreColor]">{{ answer.score ?? '-' }}</p>
-              <p class="text-xs text-slate-400 mt-1">/ 100</p>
+              <p class="text-5xl font-bold font-mono" :class="scoreStyle">{{ answer.score ?? '-' }}</p>
+              <p class="text-xs text-zinc-600 mt-1">/ 100</p>
             </div>
-            <p class="text-sm text-slate-600 flex-1">{{ answer.feedback }}</p>
+            <p class="text-sm text-zinc-300 flex-1 leading-relaxed">{{ answer.feedback }}</p>
           </div>
 
-          <div v-if="answer.strengths" class="flex items-start gap-2 text-sm">
-            <Sparkles class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-            <p><span class="font-medium text-slate-700">亮点：</span>{{ answer.strengths }}</p>
+          <div v-if="answer.strengths" class="rounded-lg bg-emerald-500/[0.07] border border-emerald-500/20 p-3.5 flex items-start gap-2.5 text-sm">
+            <Sparkles class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+            <p class="text-emerald-100/90"><span class="font-medium text-emerald-300">亮点：</span>{{ answer.strengths }}</p>
           </div>
-          <div v-if="answer.improvements" class="flex items-start gap-2 text-sm">
-            <Lightbulb class="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <p><span class="font-medium text-slate-700">建议：</span>{{ answer.improvements }}</p>
+          <div v-if="answer.improvements" class="rounded-lg bg-amber-500/[0.07] border border-amber-500/20 p-3.5 flex items-start gap-2.5 text-sm">
+            <Lightbulb class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+            <p class="text-amber-100/90"><span class="font-medium text-amber-300">建议：</span>{{ answer.improvements }}</p>
           </div>
-          <p v-if="polling" class="text-xs text-slate-400 flex items-center gap-2">
+          <p v-if="polling" class="text-xs text-zinc-500 flex items-center gap-2">
             <Loader2 class="w-3.5 h-3.5 animate-spin" /> 大模型评估中，通常需要几十秒…
           </p>
         </div>

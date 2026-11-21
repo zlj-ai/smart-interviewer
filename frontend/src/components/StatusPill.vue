@@ -2,16 +2,16 @@
 defineProps<{ status: string }>()
 
 const STYLES: Record<string, string> = {
-  CREATED: 'bg-sky-50 text-sky-700 ring-sky-200',
-  QUESTION_GENERATING: 'bg-amber-50 text-amber-700 ring-amber-200',
-  IN_PROGRESS: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
-  COMPLETED: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  FAILED: 'bg-rose-50 text-rose-700 ring-rose-200',
-  UPLOADED: 'bg-sky-50 text-sky-700 ring-sky-200',
-  VECTORIZING: 'bg-amber-50 text-amber-700 ring-amber-200',
-  VECTORIZED: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  ANALYZING: 'bg-amber-50 text-amber-700 ring-amber-200',
-  ANALYZED: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  CREATED: 'bg-sky-500/10 text-sky-400 ring-sky-500/30',
+  QUESTION_GENERATING: 'bg-amber-500/10 text-amber-400 ring-amber-500/30',
+  IN_PROGRESS: 'bg-violet-500/10 text-violet-300 ring-violet-500/30',
+  COMPLETED: 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/30',
+  FAILED: 'bg-rose-500/10 text-rose-400 ring-rose-500/30',
+  UPLOADED: 'bg-sky-500/10 text-sky-400 ring-sky-500/30',
+  VECTORIZING: 'bg-amber-500/10 text-amber-400 ring-amber-500/30',
+  VECTORIZED: 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/30',
+  ANALYZING: 'bg-amber-500/10 text-amber-400 ring-amber-500/30',
+  ANALYZED: 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/30',
 }
 
 const LABELS: Record<string, string> = {
@@ -31,7 +31,7 @@ const LABELS: Record<string, string> = {
 <template>
   <span
     class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset"
-    :class="STYLES[status] ?? 'bg-slate-50 text-slate-600 ring-slate-200'"
+    :class="STYLES[status] ?? 'bg-white/5 text-zinc-400 ring-white/10'"
   >
     {{ LABELS[status] ?? status }}
   </span>
