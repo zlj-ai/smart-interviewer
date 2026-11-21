@@ -79,49 +79,49 @@ onMounted(load)
 
 <template>
   <div class="space-y-6">
-    <section class="rounded-2xl bg-zinc-900/70 border border-white/[0.06] p-6 space-y-4">
-      <h2 class="font-semibold text-zinc-100">简历</h2>
+    <section class="card p-6 space-y-4">
+      <h2 class="font-semibold text-teal-950">简历</h2>
       <label
-        class="inline-flex items-center gap-2 border border-dashed border-white/15 rounded-lg px-5 py-3 text-sm text-zinc-400 cursor-pointer transition hover:border-violet-500/50 hover:text-violet-300"
+        class="inline-flex items-center gap-2 border border-dashed border-teal-200 rounded-xl px-5 py-3 text-sm text-teal-900/60 cursor-pointer transition hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50/60"
       >
         {{ uploading ? '上传中…' : '上传简历（pdf / docx / txt）' }}
         <input type="file" class="hidden" accept=".pdf,.docx,.txt" @change="onUpload" />
       </label>
-      <p v-if="error" class="rounded-lg bg-rose-500/10 text-rose-400 text-sm px-3 py-2 ring-1 ring-rose-500/30">{{ error }}</p>
-      <p class="text-xs text-zinc-600">上传后由大模型异步完成分析，状态变为「已分析」后点击文件名查看结果。</p>
+      <p v-if="error" class="rounded-xl bg-red-50 text-red-600 text-sm px-3 py-2 border border-red-100">{{ error }}</p>
+      <p class="text-xs text-teal-900/50">上传后由大模型异步完成分析，状态变为「已分析」后点击文件名查看结果。</p>
 
-      <div v-if="loading" class="text-sm text-zinc-500 py-2 text-center">加载中…</div>
-      <ul v-else-if="resumes.length > 0" class="divide-y divide-white/[0.06]">
+      <div v-if="loading" class="text-sm text-teal-900/50 py-2 text-center">加载中…</div>
+      <ul v-else-if="resumes.length > 0" class="divide-y divide-teal-100/70">
         <li v-for="r in resumes" :key="r.id" class="flex items-center gap-4 py-2.5">
-          <button class="text-sm text-zinc-200 hover:text-violet-300 flex-1 text-left" @click="select(r.id)">
+          <button class="text-sm text-teal-950 hover:text-teal-700 flex-1 text-left" @click="select(r.id)">
             {{ r.filename }}
           </button>
-          <span class="text-xs text-zinc-600">{{ r.charCount }} 字符</span>
+          <span class="text-xs text-teal-900/40">{{ r.charCount }} 字符</span>
           <StatusPill :status="r.status" />
-          <button class="text-zinc-600 hover:text-rose-400 transition" title="删除" @click="remove(r.id)">
+          <button class="text-teal-900/30 hover:text-red-500 transition" title="删除" @click="remove(r.id)">
             <Trash2 class="w-4 h-4" />
           </button>
         </li>
       </ul>
-      <p v-else class="text-sm text-zinc-500">还没有简历。</p>
+      <p v-else class="text-sm text-teal-900/50">还没有简历。</p>
     </section>
 
-    <section v-if="detail" class="rounded-2xl bg-zinc-900/70 border border-white/[0.06] p-6 space-y-5">
+    <section v-if="detail" class="card p-6 space-y-5">
       <div class="flex items-center justify-between">
-        <h2 class="font-semibold text-zinc-100">分析结果 · {{ detail.filename }}</h2>
+        <h2 class="font-semibold text-teal-950">分析结果 · {{ detail.filename }}</h2>
         <StatusPill :status="detail.status" />
       </div>
 
       <template v-if="analysis">
-        <p class="text-sm text-zinc-300 leading-relaxed">{{ analysis.basicInfo }}</p>
+        <p class="text-sm text-teal-950/80 leading-relaxed">{{ analysis.basicInfo }}</p>
 
         <div>
-          <h3 class="text-sm font-medium text-zinc-400 mb-2">技能清单</h3>
+          <h3 class="text-sm font-medium text-teal-900/70 mb-2">技能清单</h3>
           <div class="flex flex-wrap gap-2">
             <span
               v-for="s in analysis.skills"
               :key="s"
-              class="text-xs bg-violet-500/10 text-violet-300 ring-1 ring-violet-500/30 rounded-full px-2.5 py-1"
+              class="text-xs bg-teal-100/80 text-teal-800 rounded-full px-2.5 py-1"
             >
               {{ s }}
             </span>
@@ -129,35 +129,35 @@ onMounted(load)
         </div>
 
         <div>
-          <h3 class="text-sm font-medium text-zinc-400 mb-2">经历摘要</h3>
-          <ul class="list-disc list-inside text-sm text-zinc-300 space-y-1 marker:text-violet-500">
+          <h3 class="text-sm font-medium text-teal-900/70 mb-2">经历摘要</h3>
+          <ul class="list-disc list-inside text-sm text-teal-950/80 space-y-1 marker:text-teal-500">
             <li v-for="e in analysis.experiences" :key="e">{{ e }}</li>
           </ul>
         </div>
 
         <div class="grid md:grid-cols-2 gap-4">
-          <div class="rounded-lg bg-emerald-500/[0.07] border border-emerald-500/20 p-4">
-            <h3 class="text-sm font-medium text-emerald-300 flex items-center gap-1.5 mb-1.5">
+          <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
+            <h3 class="text-sm font-medium text-emerald-700 flex items-center gap-1.5 mb-1.5">
               <Sparkles class="w-4 h-4" /> 亮点
             </h3>
-            <p class="text-sm text-emerald-100/80">{{ analysis.strengths }}</p>
+            <p class="text-sm text-emerald-900/80">{{ analysis.strengths }}</p>
           </div>
-          <div class="rounded-lg bg-amber-500/[0.07] border border-amber-500/20 p-4">
-            <h3 class="text-sm font-medium text-amber-300 flex items-center gap-1.5 mb-1.5">
+          <div class="rounded-xl bg-amber-50 border border-amber-100 p-4">
+            <h3 class="text-sm font-medium text-amber-700 flex items-center gap-1.5 mb-1.5">
               <Lightbulb class="w-4 h-4" /> 短板与风险
             </h3>
-            <p class="text-sm text-amber-100/80">{{ analysis.weaknesses }}</p>
+            <p class="text-sm text-amber-900/80">{{ analysis.weaknesses }}</p>
           </div>
         </div>
 
         <div>
-          <h3 class="text-sm font-medium text-zinc-400 mb-2">面试准备建议</h3>
-          <ul class="list-disc list-inside text-sm text-zinc-300 space-y-1 marker:text-violet-500">
+          <h3 class="text-sm font-medium text-teal-900/70 mb-2">面试准备建议</h3>
+          <ul class="list-disc list-inside text-sm text-teal-950/80 space-y-1 marker:text-teal-500">
             <li v-for="s in analysis.suggestions" :key="s">{{ s }}</li>
           </ul>
         </div>
       </template>
-      <p v-else class="text-sm text-zinc-500">
+      <p v-else class="text-sm text-teal-900/50">
         暂无分析结果（状态：{{ detail.status }}）。状态为 FAILED 可重新上传。
       </p>
     </section>

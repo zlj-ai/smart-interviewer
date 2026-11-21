@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  /* 薄荷青主题令牌 */
+  --bg: #F6FBF9;
+  --card: #FFFFFF;
+  --border: #D1F0E6;
+  --accent: #0D9488;
+  --accent-soft: #CCFBF1;
 }
 
 ::selection {
-  background: rgb(139 92 246 / 0.35);
+  background: rgb(13 148 136 / 0.18);
 }
 
 ::-webkit-scrollbar {
@@ -14,14 +20,66 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 0.12);
+  background: #B9DDD2;
   border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(255 255 255 / 0.2);
+  background: #93CFC0;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* 共享卡片：白底 + 薄荷边框 + 柔和青色投影 */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.08);
+}
+
+/* 共享输入框 */
+.input {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.875rem;
+  color: #134E4A;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgb(13 148 136 / 0.1);
+}
+
+.input::placeholder {
+  color: #9CBFB6;
+}
+
+/* 共享主按钮 */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.25);
+  transition: filter 0.15s, opacity 0.15s;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -40,44 +40,41 @@ async function onSubmit(): Promise<void> {
 
     <div class="flex items-center justify-center p-8">
       <form class="w-full max-w-sm space-y-5" @submit.prevent="onSubmit">
-        <h2 class="text-2xl font-bold text-zinc-100">欢迎回来</h2>
+        <h2 class="text-2xl font-bold text-teal-950">欢迎回来</h2>
 
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-zinc-400">用户名</label>
+          <label class="block text-sm font-medium text-teal-900/70">用户名</label>
           <input
             v-model="username"
             required
             autocomplete="username"
-            class="w-full rounded-lg bg-zinc-900 border border-white/10 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-violet-500/60 focus:ring-4 focus:ring-violet-500/10"
+            class="input w-full"
             placeholder="输入用户名"
           />
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-zinc-400">密码</label>
+          <label class="block text-sm font-medium text-teal-900/70">密码</label>
           <input
             v-model="password"
             type="password"
             required
             autocomplete="current-password"
-            class="w-full rounded-lg bg-zinc-900 border border-white/10 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-violet-500/60 focus:ring-4 focus:ring-violet-500/10"
+            class="input w-full"
             placeholder="输入密码"
           />
         </div>
 
-        <p v-if="error" class="rounded-lg bg-rose-500/10 text-rose-400 text-sm px-3 py-2 ring-1 ring-rose-500/30">
+        <p v-if="error" class="rounded-xl bg-red-50 text-red-600 text-sm px-3 py-2 border border-red-100">
           {{ error }}
         </p>
 
-        <button
-          :disabled="loading"
-          class="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white py-2.5 text-sm font-medium shadow-lg shadow-violet-600/30 transition hover:brightness-110 disabled:opacity-50"
-        >
+        <button :disabled="loading" class="btn-primary w-full">
           {{ loading ? '登录中…' : '登录' }}
         </button>
 
-        <p class="text-sm text-zinc-500">
+        <p class="text-sm text-teal-900/60">
           没有账号？
-          <router-link :to="routes.register" class="text-violet-400 font-medium hover:text-violet-300">去注册</router-link>
+          <router-link :to="routes.register" class="text-teal-700 font-medium hover:underline">去注册</router-link>
         </p>
       </form>
     </div>
