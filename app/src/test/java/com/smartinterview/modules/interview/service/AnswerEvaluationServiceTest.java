@@ -25,6 +25,7 @@ import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.repository.InterviewAnswerRepository;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +63,7 @@ class AnswerEvaluationServiceTest {
   @BeforeEach
   void setUp() {
     service = new AnswerEvaluationService(answerRepository, questionRepository, sessionRepository,
-        outputInvoker, transactionalExecutor, llmClientFactory);
+        outputInvoker, transactionalExecutor, llmClientFactory, new SimpleMeterRegistry());
     lenient().when(transactionalExecutor.inTransaction(ArgumentMatchers.<Supplier<Integer>>any()))
         .thenAnswer(invocation -> ((Supplier<Integer>) invocation.getArgument(0)).get());
   }

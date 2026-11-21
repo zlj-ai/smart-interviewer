@@ -3,6 +3,9 @@ package com.smartinterview.common.async;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RStream;
 import org.redisson.api.RedissonClient;
@@ -14,6 +17,8 @@ import org.redisson.client.RedisException;
 import org.springframework.context.SmartLifecycle;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -188,7 +193,31 @@ public abstract class AbstractStreamConsumer<T> implements SmartLifecycle {
 
   // ---------------- 单条消息处理（可单测） ----------------
 
+  private static final TextMapGetter<Map<String, String>> TRACE_GETTER =
+      new TextMapGetter<>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier == null ? List.of() : carrier.keySet();
+        }
+
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+          return carrier == null ? null : carrier.get(key);
+        }
+      };
+
+  /**
+   * 提取消息头中的 W3C trace 上下文并设为当前，处理期间产生的 span 延续发布方链路。
+   */
   void processRecord(StreamMessageId id, Map<String, String> body) {
+    Context extracted = W3CTraceContextPropagator.getInstance().extract(
+        Context.current(), body, TRACE_GETTER);
+    try (var scope = extracted.makeCurrent()) {
+      processRecordInternal(id, body);
+    }
+  }
+
+  private void processRecordInternal(StreamMessageId id, Map<String, String> body) {
     RStream<String, String> stream = redissonClient.getStream(streamKey());
     int retryCount = parseRetryCount(body);
     T data;

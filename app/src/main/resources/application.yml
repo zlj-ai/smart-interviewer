@@ -78,6 +78,13 @@ management:
   metrics:
     tags:
       application: smart-interviewer
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      # Grafana Tempo 的 OTLP HTTP 接收端
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
 
 springdoc:
   swagger-ui:

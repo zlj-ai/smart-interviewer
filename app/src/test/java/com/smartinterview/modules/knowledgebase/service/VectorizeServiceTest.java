@@ -14,6 +14,7 @@ import com.smartinterview.modules.knowledgebase.config.KnowledgeProperties;
 import com.smartinterview.modules.knowledgebase.model.DocumentStatus;
 import com.smartinterview.modules.knowledgebase.model.KbDocumentEntity;
 import com.smartinterview.modules.knowledgebase.repository.KbDocumentRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,7 @@ class VectorizeServiceTest {
   @BeforeEach
   void setUp() {
     service = new VectorizeService(documentRepository, vectorStore, transactionalExecutor,
-        new KnowledgeProperties(50, 10));
+        new KnowledgeProperties(50, 10), new SimpleMeterRegistry());
     lenient().when(transactionalExecutor.inTransaction(ArgumentMatchers.<Supplier<Object>>any()))
         .thenAnswer(invocation -> ((Supplier<Object>) invocation.getArgument(0)).get());
   }

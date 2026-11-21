@@ -1,0 +1,8 @@
+apiVersion: 1
+
+providers:
+  - name: smart-interviewer
+    folder: ""
+    type: file
+    options:
+      path: /etc/grafana/provisioning/dashboards

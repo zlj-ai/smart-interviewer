@@ -64,6 +64,10 @@ dependencies {
     // Prometheus metrics endpoint for Actuator
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
+    // 分布式追踪：Micrometer OTel bridge + OTLP 导出（Grafana Tempo）
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    runtimeOnly 'io.opentelemetry:opentelemetry-exporter-otlp'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.46'
     annotationProcessor 'org.projectlombok:lombok:1.18.46'

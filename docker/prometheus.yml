@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: smart-interviewer
+    metrics_path: /actuator/prometheus
+    static_configs:
+      # 应用以 bootRun 跑在宿主机，容器内经 host.docker.internal 访问
+      - targets: ["host.docker.internal:8080"]

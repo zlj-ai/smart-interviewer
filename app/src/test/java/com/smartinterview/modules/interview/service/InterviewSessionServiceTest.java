@@ -28,6 +28,7 @@ import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -76,7 +77,7 @@ class InterviewSessionServiceTest {
     lenient().when(redissonClient.getLock(anyString())).thenReturn(lock);
     service = new InterviewSessionService(repository, questionRepository,
         new InterviewSessionMapperImpl(), new RedisLockExecutor(redissonClient),
-        redissonClient, taskProducer);
+        redissonClient, taskProducer, new SimpleMeterRegistry());
   }
 
   private InterviewSessionEntity session(Long id) {

@@ -15,6 +15,7 @@ import com.smartinterview.modules.interview.model.QuestionResponse;
 import com.smartinterview.modules.interview.model.SessionResponse;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,7 @@ public class InterviewSessionService {
   private final RedisLockExecutor lockExecutor;
   private final RedissonClient redissonClient;
   private final StreamTaskProducer taskProducer;
+  private final MeterRegistry meterRegistry;
 
   public SessionResponse createSession(CreateSessionRequest request, Long userId) {
     RBucket<Long> cache = cacheOf(userId, request.requestId());
@@ -79,6 +81,8 @@ public class InterviewSessionService {
       InterviewSessionEntity saved = repository.save(entity);
       cache.set(saved.getId(), CACHE_TTL);
       publishGenerationTask(saved.getId(), userId);
+      meterRegistry.counter("interview_sessions_started_total",
+          "direction", saved.getDirection().name()).increment();
       log.info("面试会话已创建: sessionId={}, userId={}, direction={}",
           saved.getId(), userId, saved.getDirection());
       return mapper.toResponse(saved);

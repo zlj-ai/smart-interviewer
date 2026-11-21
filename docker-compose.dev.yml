@@ -59,6 +59,39 @@ services:
       mc mb -p local/resumes 2>/dev/null || true;
       exit 0"
 
+  # 可观测栈：镜像走国内源（grafana/otel-lgtm 的 ghcr.io 拉取被拒，拆组件部署）
+  prometheus:
+    image: docker.m.daocloud.io/prom/prometheus:latest
+    container_name: smart-interviewer-prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  tempo:
+    image: docker.m.daocloud.io/grafana/tempo:latest
+    container_name: smart-interviewer-tempo
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./docker/tempo.yaml:/etc/tempo/tempo.yaml:ro
+    ports:
+      - "4318:4318"
+      - "3200:3200"
+
+  grafana:
+    image: docker.m.daocloud.io/grafana/grafana:latest
+    container_name: smart-interviewer-grafana
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - tempo
+
 volumes:
   postgres-data:
   redis-data:

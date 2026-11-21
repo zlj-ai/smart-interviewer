@@ -14,6 +14,7 @@ import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.repository.InterviewAnswerRepository;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class AnswerEvaluationService {
   private final StructuredOutputInvoker outputInvoker;
   private final TransactionalExecutor transactionalExecutor;
   private final LlmClientFactory llmClientFactory;
+  private final MeterRegistry meterRegistry;
 
   public void evaluateAnswer(Long answerId, int attempt) {
     InterviewAnswerEntity answer = answerRepository.findById(answerId)
@@ -57,10 +59,12 @@ public class AnswerEvaluationService {
             result.feedback(), result.strengths(), result.improvements()));
     if (updated == 0) {
       // fencing 命中：评估期间用户重新提交过回答，本任务对应旧版本，结果丢弃
+      meterRegistry.counter("interview_answer_evaluated_total", "status", "fencing_discarded").increment();
       log.info("评估结果因 fencing 落空被丢弃: answerId={}, attempt={}", answerId, attempt);
       return;
     }
     completeSessionIfAllEvaluated(session.getId());
+    meterRegistry.counter("interview_answer_evaluated_total", "status", "evaluated").increment();
     log.info("回答评估完成: answerId={}, score={}", answerId, score);
   }
 

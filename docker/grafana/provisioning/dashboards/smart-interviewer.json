@@ -1,0 +1,47 @@
+{
+  "annotations": { "list": [] },
+  "title": "Smart Interviewer 概览",
+  "uid": "smart-interviewer-overview",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP 请求速率（每秒）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (uri, status)" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM 活跃线程与堆内存",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "jvm_threads_live_threads" },
+        { "expr": "jvm_memory_used_bytes{area=\"heap\"}" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "面试会话创建总数",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 },
+      "targets": [{ "expr": "sum(interview_sessions_started_total)" }]
+    },
+    {
+      "type": "stat",
+      "title": "回答评估总数",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 8 },
+      "targets": [{ "expr": "sum(interview_answer_evaluated_total)" }]
+    },
+    {
+      "type": "stat",
+      "title": "限流拒绝总数",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 },
+      "targets": [{ "expr": "sum(rate_limit_rejected_total)" }]
+    },
+    {
+      "type": "stat",
+      "title": "文档向量化总数",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 },
+      "targets": [{ "expr": "sum(knowledge_vectorized_total)" }]
+    }
+  ],
+  "schemaVersion": 39
+}

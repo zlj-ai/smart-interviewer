@@ -8,6 +8,7 @@ import com.smartinterview.modules.knowledgebase.config.KnowledgeProperties;
 import com.smartinterview.modules.knowledgebase.model.DocumentStatus;
 import com.smartinterview.modules.knowledgebase.model.KbDocumentEntity;
 import com.smartinterview.modules.knowledgebase.repository.KbDocumentRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class VectorizeService {
   private final VectorStore vectorStore;
   private final TransactionalExecutor transactionalExecutor;
   private final KnowledgeProperties properties;
+  private final MeterRegistry meterRegistry;
 
   public void vectorize(Long docId) {
     KbDocumentEntity doc = documentRepository.findById(docId)
@@ -72,6 +74,7 @@ public class VectorizeService {
       documentRepository.save(doc);
       return null;
     });
+    meterRegistry.counter("knowledge_vectorized_total", "status", "vectorized").increment();
     log.info("文档向量化完成: docId={}, chunks={}", docId, chunks.size());
   }
 
