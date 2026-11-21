@@ -51,6 +51,9 @@ dependencies {
     implementation 'org.apache.tika:tika-core:2.9.2'
     implementation 'org.apache.tika:tika-parsers-standard-package:2.9.2'
 
+    // AWS S3 SDK - 对象存储（RustFS/MinIO 兼容协议，简历文件存取）
+    implementation "software.amazon.awssdk:s3:2.29.51"
+
     // Redisson - Redis 客户端（缓存 / 分布式锁 / Stream）
     implementation 'org.redisson:redisson-spring-boot-starter:4.0.0'
 
