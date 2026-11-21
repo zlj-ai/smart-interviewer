@@ -61,6 +61,10 @@ app:
     secret-key: ${S3_SECRET_KEY:minioadmin}
     bucket: ${S3_BUCKET:resumes}
 
+  voice:
+    recent-window: 6
+    char-budget: 4000
+
   servlet:
     multipart:
       max-file-size: 10MB

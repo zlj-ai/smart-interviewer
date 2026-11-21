@@ -48,6 +48,8 @@ public class SecurityConfig {
                 "/api/auth/refresh", "/api/auth/logout").permitAll()
             .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
             .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+            // 浏览器原生 WebSocket 无法携带 Authorization 头，鉴权由握手拦截器强制执行
+            .requestMatchers("/ws/voice/**").permitAll()
             .anyRequest().authenticated())
         .exceptionHandling(handling -> handling
             .authenticationEntryPoint(this::writeUnauthorized)
