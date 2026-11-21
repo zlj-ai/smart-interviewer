@@ -4,11 +4,13 @@ import com.smartinterview.common.result.PageResponse;
 import com.smartinterview.common.result.Result;
 import com.smartinterview.common.security.SecurityUtils;
 import com.smartinterview.modules.interview.model.CreateSessionRequest;
+import com.smartinterview.modules.interview.model.QuestionResponse;
 import com.smartinterview.modules.interview.model.SessionResponse;
 import com.smartinterview.modules.interview.service.InterviewSessionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,5 +48,15 @@ public class InterviewSessionController {
   @GetMapping("/{id}")
   public Result<SessionResponse> detail(@PathVariable Long id) {
     return Result.ok(sessionService.getSession(id, SecurityUtils.requireCurrentUserId()));
+  }
+
+  @PostMapping("/{id}/questions/regenerate")
+  public Result<SessionResponse> regenerate(@PathVariable Long id) {
+    return Result.ok(sessionService.regenerateQuestions(id, SecurityUtils.requireCurrentUserId()));
+  }
+
+  @GetMapping("/{id}/questions")
+  public Result<List<QuestionResponse>> questions(@PathVariable Long id) {
+    return Result.ok(sessionService.listQuestions(id, SecurityUtils.requireCurrentUserId()));
   }
 }

@@ -5,20 +5,28 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.mockito.ArgumentMatchers.eq;
+
+import com.smartinterview.common.async.StreamTaskProducer;
 import com.smartinterview.common.concurrency.RedisLockExecutor;
 import com.smartinterview.common.exception.BusinessException;
+import com.smartinterview.common.exception.ErrorCode;
+import com.smartinterview.modules.interview.async.QuestionGenerationStreamConsumer;
+import com.smartinterview.modules.interview.async.QuestionGenerationTask;
 import com.smartinterview.modules.interview.mapper.InterviewSessionMapperImpl;
 import com.smartinterview.modules.interview.model.CreateSessionRequest;
 import com.smartinterview.modules.interview.model.InterviewDirection;
 import com.smartinterview.modules.interview.model.InterviewDifficulty;
 import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
+import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
 import java.time.Duration;
 import java.time.Instant;
@@ -30,6 +38,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,11 +58,15 @@ class InterviewSessionServiceTest {
   @Mock
   private InterviewSessionRepository repository;
   @Mock
+  private InterviewQuestionRepository questionRepository;
+  @Mock
   private RedissonClient redissonClient;
   @Mock
   private RBucket<Long> cacheBucket;
   @Mock
   private RLock lock;
+  @Mock
+  private StreamTaskProducer taskProducer;
 
   private InterviewSessionService service;
 
@@ -61,8 +74,9 @@ class InterviewSessionServiceTest {
   void setUp() {
     lenient().doReturn(cacheBucket).when(redissonClient).getBucket(anyString());
     lenient().when(redissonClient.getLock(anyString())).thenReturn(lock);
-    service = new InterviewSessionService(repository, new InterviewSessionMapperImpl(),
-        new RedisLockExecutor(redissonClient), redissonClient);
+    service = new InterviewSessionService(repository, questionRepository,
+        new InterviewSessionMapperImpl(), new RedisLockExecutor(redissonClient),
+        redissonClient, taskProducer);
   }
 
   private InterviewSessionEntity session(Long id) {
@@ -136,7 +150,7 @@ class InterviewSessionServiceTest {
     }
 
     @Test
-    @DisplayName("锁内查库未命中则新建并写结果缓存")
+    @DisplayName("锁内查库未命中则新建、写结果缓存并发布题目生成任务")
     void createInLock() throws InterruptedException {
       when(cacheBucket.get()).thenReturn(null);
       when(lock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).thenReturn(true);
@@ -153,6 +167,30 @@ class InterviewSessionServiceTest {
       assertThat(response.direction()).isEqualTo("JAVA_BACKEND");
       assertThat(response.status()).isEqualTo("CREATED");
       verify(cacheBucket).set(9L, Duration.ofHours(24));
+      ArgumentCaptor<Object> taskCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(taskProducer).publish(eq(QuestionGenerationStreamConsumer.STREAM_KEY), taskCaptor.capture());
+      assertThat(taskCaptor.getValue()).isInstanceOf(QuestionGenerationTask.class);
+      assertThat(((QuestionGenerationTask) taskCaptor.getValue()).sessionId()).isEqualTo(9L);
+    }
+
+    @Test
+    @DisplayName("发布生成任务失败时降级：会话创建不受影响")
+    void publishFailureDoesNotBreakCreation() throws InterruptedException {
+      when(cacheBucket.get()).thenReturn(null);
+      when(lock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).thenReturn(true);
+      when(repository.findByRequestIdAndUserId(REQUEST_ID, USER_ID)).thenReturn(Optional.empty());
+      when(repository.save(any(InterviewSessionEntity.class))).thenAnswer(invocation -> {
+        InterviewSessionEntity entity = invocation.getArgument(0);
+        entity.setId(9L);
+        return entity;
+      });
+      doThrow(new BusinessException(ErrorCode.TASK_FAILED, "发布失败"))
+          .when(taskProducer).publish(anyString(), any());
+
+      var response = service.createSession(request(), USER_ID);
+
+      assertThat(response.id()).isEqualTo(9L);
+      verify(repository).save(any(InterviewSessionEntity.class));
     }
 
     @Test

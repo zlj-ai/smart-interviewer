@@ -1,16 +1,22 @@
 package com.smartinterview.modules.interview.service;
 
+import com.smartinterview.common.async.StreamTaskProducer;
 import com.smartinterview.common.concurrency.RedisLockExecutor;
 import com.smartinterview.common.exception.BusinessException;
 import com.smartinterview.common.exception.ErrorCode;
 import com.smartinterview.common.result.PageResponse;
+import com.smartinterview.modules.interview.async.QuestionGenerationTask;
+import com.smartinterview.modules.interview.async.QuestionGenerationStreamConsumer;
 import com.smartinterview.modules.interview.mapper.InterviewSessionMapper;
 import com.smartinterview.modules.interview.model.CreateSessionRequest;
 import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
+import com.smartinterview.modules.interview.model.QuestionResponse;
 import com.smartinterview.modules.interview.model.SessionResponse;
+import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,9 +46,11 @@ public class InterviewSessionService {
   private static final String LOCK_KEY_PREFIX = "idem:lock:session:";
 
   private final InterviewSessionRepository repository;
+  private final InterviewQuestionRepository questionRepository;
   private final InterviewSessionMapper mapper;
   private final RedisLockExecutor lockExecutor;
   private final RedissonClient redissonClient;
+  private final StreamTaskProducer taskProducer;
 
   public SessionResponse createSession(CreateSessionRequest request, Long userId) {
     RBucket<Long> cache = cacheOf(userId, request.requestId());
@@ -70,10 +78,62 @@ public class InterviewSessionService {
       entity.setStatus(InterviewSessionStatus.CREATED);
       InterviewSessionEntity saved = repository.save(entity);
       cache.set(saved.getId(), CACHE_TTL);
+      publishGenerationTask(saved.getId(), userId);
       log.info("面试会话已创建: sessionId={}, userId={}, direction={}",
           saved.getId(), userId, saved.getDirection());
       return mapper.toResponse(saved);
     });
+  }
+
+  /**
+   * 发布题目生成任务。发布失败不阻断会话创建（会话保留 CREATED 状态，
+   * 用户可通过重新生成入口重试），降级只记错误日志。
+   */
+  private void publishGenerationTask(Long sessionId, Long userId) {
+    try {
+      taskProducer.publish(QuestionGenerationStreamConsumer.STREAM_KEY,
+          new QuestionGenerationTask(sessionId, userId));
+    } catch (BusinessException e) {
+      log.error("题目生成任务发布失败，等待用户手动重试: sessionId={}, {}", sessionId, e.getMessage());
+    }
+  }
+
+  /**
+   * 重新生成题目：归属校验后重置状态并重新发布任务。
+   */
+  public SessionResponse regenerateQuestions(Long sessionId, Long userId) {
+    InterviewSessionEntity entity = loadOwnedEntity(sessionId, userId);
+    entity.setStatus(InterviewSessionStatus.QUESTION_GENERATING);
+    InterviewSessionEntity saved = repository.save(entity);
+    taskProducer.publish(QuestionGenerationStreamConsumer.STREAM_KEY,
+        new QuestionGenerationTask(sessionId, userId));
+    return mapper.toResponse(saved);
+  }
+
+  public boolean existsSession(Long sessionId) {
+    return repository.existsById(sessionId);
+  }
+
+  /**
+   * 重试超限后的最终失败标记；会话已删除时静默跳过。
+   */
+  public void markFailed(Long sessionId) {
+    repository.findById(sessionId).ifPresent(entity -> {
+      entity.setStatus(InterviewSessionStatus.FAILED);
+      repository.save(entity);
+      log.error("面试会话题目生成最终失败: sessionId={}", sessionId);
+    });
+  }
+
+  /**
+   * 题目列表：先校验会话归属，再按 seq 读取。
+   */
+  public List<QuestionResponse> listQuestions(Long sessionId, Long userId) {
+    loadOwned(sessionId, userId);
+    return questionRepository.findBySessionIdOrderBySeqAsc(sessionId)
+        .stream()
+        .map(mapper::toQuestionResponse)
+        .toList();
   }
 
   /**
@@ -89,10 +149,13 @@ public class InterviewSessionService {
   }
 
   private SessionResponse loadOwned(Long sessionId, Long userId) {
-    InterviewSessionEntity entity = repository.findById(sessionId)
+    return mapper.toResponse(loadOwnedEntity(sessionId, userId));
+  }
+
+  private InterviewSessionEntity loadOwnedEntity(Long sessionId, Long userId) {
+    return repository.findById(sessionId)
         .filter(e -> e.getUserId().equals(userId))
         .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "会话不存在"));
-    return mapper.toResponse(entity);
   }
 
   private RBucket<Long> cacheOf(Long userId, String requestId) {

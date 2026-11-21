@@ -43,6 +43,9 @@ app:
         base-url: ${AI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
         model: ${AI_CHAT_MODEL:qwen-plus}
 
+  interview:
+    question-count: 5
+
 management:
   endpoints:
     web:

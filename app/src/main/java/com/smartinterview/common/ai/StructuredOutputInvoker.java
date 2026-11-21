@@ -1,7 +1,9 @@
 package com.smartinterview.common.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartinterview.common.exception.BusinessException;
 import com.smartinterview.common.exception.ErrorCode;
@@ -30,6 +32,17 @@ public class StructuredOutputInvoker {
   }
 
   public <T> T invoke(String prompt, Class<T> targetType, Function<String, String> llmCall) {
+    return invoke(prompt, objectMapper.constructType(targetType), llmCall);
+  }
+
+  /**
+   * 泛型目标类型版本，如 List&lt;QuestionDraft&gt;。
+   */
+  public <T> T invoke(String prompt, TypeReference<T> targetType, Function<String, String> llmCall) {
+    return invoke(prompt, objectMapper.constructType(targetType), llmCall);
+  }
+
+  private <T> T invoke(String prompt, JavaType targetType, Function<String, String> llmCall) {
     String firstOutput = llmCall.apply(prompt);
     ParseAttempt<T> first = tryParse(firstOutput, targetType);
     if (first.success()) {
@@ -47,7 +60,7 @@ public class StructuredOutputInvoker {
         "LLM 结构化输出解析失败，重试后仍未通过: " + second.errorMessage());
   }
 
-  private <T> ParseAttempt<T> tryParse(String output, Class<T> targetType) {
+  private <T> ParseAttempt<T> tryParse(String output, JavaType targetType) {
     try {
       return new ParseAttempt<>(objectMapper.readValue(JsonRepair.extract(output), targetType), null);
     } catch (JsonProcessingException | IllegalArgumentException e) {
