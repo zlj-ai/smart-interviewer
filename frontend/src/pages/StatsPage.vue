@@ -57,7 +57,7 @@ onMounted(load)
 
 <template>
   <div class="space-y-6">
-    <section class="card p-6">
+    <section class="card card-accent-top p-6">
       <h2 class="font-semibold text-teal-950 mb-4 flex items-center gap-2">
         <TrendingUp class="w-5 h-5 text-teal-600" /> 评分趋势
       </h2>

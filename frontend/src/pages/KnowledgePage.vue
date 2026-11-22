@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
+import { BookOpen } from 'lucide-vue-next'
 import { createKb, listDocuments, listKbs, uploadDocument } from '@/api/knowledge'
+import EmptyState from '@/components/EmptyState.vue'
 import StatusPill from '@/components/StatusPill.vue'
 import type { KbDocumentResponse, KbResponse } from '@/types/api'
 
@@ -75,7 +77,7 @@ onMounted(loadKbs)
 
 <template>
   <div class="space-y-6">
-    <section class="card p-6 space-y-4">
+    <section class="card card-accent-top p-6 space-y-4">
       <h2 class="font-semibold text-teal-950">创建知识库</h2>
       <div class="flex flex-wrap items-end gap-3">
         <div>
@@ -121,7 +123,7 @@ onMounted(loadKbs)
             <input type="file" class="hidden" accept=".pdf,.docx,.txt,.md" @change="onUpload" />
           </label>
 
-          <p v-if="documents.length === 0" class="text-sm text-teal-900/50">还没有文档。</p>
+          <EmptyState v-if="documents.length === 0" :icon="BookOpen" text="还没有文档，上传后自动向量化以供 RAG 检索。" />
 
           <ul v-else class="divide-y divide-teal-100/70">
             <li v-for="d in documents" :key="d.id" class="flex items-center gap-4 py-2.5">

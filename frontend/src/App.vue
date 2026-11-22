@@ -70,7 +70,9 @@ async function onLogout(): Promise<void> {
       </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-8">
+    <main class="max-w-5xl mx-auto px-4 py-8 relative">
+      <!-- 空白区域点阵填充：极淡薄荷色，只露出卡片间隙 -->
+      <div class="dot-pattern absolute inset-x-4 top-6 h-40 rounded-2xl opacity-70 pointer-events-none" />
       <router-view />
     </main>
   </div>

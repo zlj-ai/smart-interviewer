@@ -36,8 +36,12 @@ async function onSubmit(): Promise<void> {
       subtitle="注册后即可创建面试、上传简历并搭建自己的知识库。"
     />
 
-    <div class="flex items-center justify-center p-8">
-      <form class="w-full max-w-sm space-y-5" @submit.prevent="onSubmit">
+    <div class="flex items-center justify-center p-8 dot-pattern relative">
+      <!-- 右下装饰圆环 -->
+      <div class="absolute bottom-10 right-10 w-40 h-40 rounded-full border-[10px] border-teal-100/80 pointer-events-none" />
+      <div class="absolute bottom-24 right-24 w-16 h-16 rounded-full bg-teal-100/60 pointer-events-none" />
+
+      <form class="w-full max-w-sm space-y-5 bg-white rounded-2xl border border-teal-100 p-8 shadow-xl shadow-teal-600/[0.07] relative" @submit.prevent="onSubmit">
         <h2 class="text-2xl font-bold text-teal-950">注册账号</h2>
 
         <div class="space-y-2">

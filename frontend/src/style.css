@@ -32,6 +32,36 @@
   background: transparent;
 }
 
+/* ===== 图案填充 ===== */
+
+/* 点阵纹理：极淡薄荷色圆点，用于大面积空白 */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgb(13 148 136 / 0.08) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+/* 网格纹理：细线方格，用于表单区侧边 */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgb(13 148 136 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(13 148 136 / 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* 卡片顶部渐变细条：品牌色点缀 */
+.card-accent-top {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-accent-top::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0D9488, #34D399);
+}
+
 /* 共享卡片：白底 + 薄荷边框 + 柔和青色投影 */
 .card {
   background: var(--card);
@@ -72,11 +102,12 @@
   font-weight: 500;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(13, 148, 136, 0.25);
-  transition: filter 0.15s, opacity 0.15s;
+  transition: filter 0.15s, opacity 0.15s, transform 0.15s;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {

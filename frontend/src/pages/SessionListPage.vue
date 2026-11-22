@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ChevronRight, Plus } from 'lucide-vue-next'
+import { ChevronRight, MessagesSquare, Plus } from 'lucide-vue-next'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { createSession, listSessions } from '@/api/sessions'
 import { listResumes } from '@/api/resume'
 import { routes } from '@/constants/routes'
+import EmptyState from '@/components/EmptyState.vue'
 import StatusPill from '@/components/StatusPill.vue'
 
 const router = useRouter()
@@ -127,10 +128,8 @@ onMounted(() => {
 
       <div v-if="loading" class="text-sm text-teal-900/50 py-8 text-center">加载中…</div>
 
-      <div v-else-if="(sessions?.content.length ?? 0) === 0"
-           class="py-12 text-center border border-dashed border-teal-200 rounded-xl">
-        <p class="text-sm text-teal-900/50">还没有面试记录，从上方创建第一场。</p>
-      </div>
+      <EmptyState v-else-if="(sessions?.content.length ?? 0) === 0" :icon="MessagesSquare"
+                  text="还没有面试记录，从上方创建第一场。" />
 
       <ul v-else class="divide-y divide-teal-100/70 -mx-2">
         <li v-for="s in sessions?.content" :key="s.id">

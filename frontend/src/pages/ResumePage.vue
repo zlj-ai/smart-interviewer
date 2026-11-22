@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { Lightbulb, Sparkles, Trash2 } from 'lucide-vue-next'
+import { FileText, Lightbulb, Sparkles, Trash2 } from 'lucide-vue-next'
 
 import { deleteResume, getResumeDetail, listResumes, uploadResume } from '@/api/resume'
+import EmptyState from '@/components/EmptyState.vue'
 import StatusPill from '@/components/StatusPill.vue'
 import type { ResumeDetailResponse, ResumeResponse } from '@/types/api'
 
@@ -79,7 +80,7 @@ onMounted(load)
 
 <template>
   <div class="space-y-6">
-    <section class="card p-6 space-y-4">
+    <section class="card card-accent-top p-6 space-y-4">
       <h2 class="font-semibold text-teal-950">简历</h2>
       <label
         class="inline-flex items-center gap-2 border border-dashed border-teal-200 rounded-xl px-5 py-3 text-sm text-teal-900/60 cursor-pointer transition hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50/60"
@@ -103,7 +104,7 @@ onMounted(load)
           </button>
         </li>
       </ul>
-      <p v-else class="text-sm text-teal-900/50">还没有简历。</p>
+      <EmptyState v-else :icon="FileText" text="还没有简历，上传后 AI 自动完成结构化分析。" />
     </section>
 
     <section v-if="detail" class="card p-6 space-y-5">
