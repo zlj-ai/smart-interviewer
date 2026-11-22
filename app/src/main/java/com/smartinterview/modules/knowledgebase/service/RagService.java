@@ -134,6 +134,8 @@ public class RagService {
   }
 
   private String callModel(String prompt) {
-    return llmClientFactory.getChatClient().prompt().user(prompt).call().content();
+    // 查询改写为轻量任务：路由到低成本档位模型（routing 未配置时回退主模型）
+    return llmClientFactory.getChatClientForFeature("query-rewrite")
+        .prompt().user(prompt).call().content();
   }
 }

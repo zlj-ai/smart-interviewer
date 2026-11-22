@@ -42,6 +42,10 @@ app:
     default-provider: ${AI_DEFAULT_PROVIDER:dashscope}
     embedding-model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
     embedding-dimensions: 1024
+    # 功能 → Provider 路由：按任务分级选用不同档位模型控制成本，未配置回退 default-provider
+    routing:
+      answer-evaluation: ${AI_ROUTE_EVALUATION:dashscope}
+      query-rewrite: ${AI_ROUTE_REWRITE:dashscope}
     providers:
       - name: dashscope
         api-key: ${AI_API_KEY:}

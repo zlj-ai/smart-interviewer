@@ -35,6 +35,14 @@ public class LlmClientFactory {
   }
 
   /**
+   * 按功能路由模型：routing 中配置了该功能的 Provider 则使用之，否则回退默认。
+   * 功能名约定为调用点语义名（如 answer-evaluation / query-rewrite）。
+   */
+  public ChatClient getChatClientForFeature(String feature) {
+    return getChatClient(properties.providerForFeature(feature));
+  }
+
+  /**
    * 使用指定名称的 Provider，未配置时抛 NOT_FOUND。
    */
   public ChatClient getChatClient(String providerName) {
