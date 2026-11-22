@@ -48,6 +48,8 @@ class QuestionGenerationServiceTest {
   @Mock
   private InterviewAnswerRepository answerRepository;
   @Mock
+  private com.smartinterview.modules.resume.repository.ResumeRepository resumeRepository;
+  @Mock
   private StructuredOutputInvoker outputInvoker;
   @Mock
   private TransactionalExecutor transactionalExecutor;
@@ -59,7 +61,7 @@ class QuestionGenerationServiceTest {
   @BeforeEach
   void setUp() {
     service = new QuestionGenerationService(sessionRepository, questionRepository, answerRepository,
-        outputInvoker, transactionalExecutor, new InterviewProperties(5), llmClientFactory);
+        resumeRepository, outputInvoker, transactionalExecutor, new InterviewProperties(5), llmClientFactory);
     lenient().when(transactionalExecutor.inTransaction(ArgumentMatchers.<Supplier<Object>>any()))
         .thenAnswer(invocation -> ((Supplier<Object>) invocation.getArgument(0)).get());
   }

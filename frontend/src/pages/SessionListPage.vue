@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Plus } from 'lucide-vue-next'
+import { ChevronRight, Plus } from 'lucide-vue-next'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { createSession, listSessions } from '@/api/sessions'
+import { listResumes } from '@/api/resume'
 import { routes } from '@/constants/routes'
 import StatusPill from '@/components/StatusPill.vue'
 
@@ -12,6 +13,8 @@ const router = useRouter()
 const sessions = ref<Awaited<ReturnType<typeof listSessions>> | null>(null)
 const direction = ref('JAVA_BACKEND')
 const difficulty = ref('MEDIUM')
+const resumeId = ref<number | null>(null)
+const resumes = ref<{ id: number; filename: string; status: string }[]>([])
 const creating = ref(false)
 const createError = ref('')
 const page = ref(0)
@@ -44,7 +47,12 @@ async function onCreate(): Promise<void> {
   createError.value = ''
   try {
     const requestId = crypto.randomUUID()
-    const session = await createSession(requestId, direction.value, difficulty.value)
+    const session = await createSession(
+      requestId,
+      direction.value,
+      difficulty.value,
+      resumeId.value ?? undefined,
+    )
     await router.push(routes.sessionDetail(session.id))
   } catch (e: unknown) {
     createError.value = (e as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -52,6 +60,11 @@ async function onCreate(): Promise<void> {
   } finally {
     creating.value = false
   }
+}
+
+async function loadResumes(): Promise<void> {
+  const page = await listResumes()
+  resumes.value = page.content.filter((r) => r.status === 'ANALYZED')
 }
 
 async function goto(pageNo: number): Promise<void> {
@@ -66,7 +79,10 @@ function formatTime(value: string): string {
   return new Date(value).toLocaleString('zh-CN', { hour12: false })
 }
 
-onMounted(load)
+onMounted(() => {
+  void load()
+  void loadResumes()
+})
 </script>
 
 <template>
@@ -76,8 +92,15 @@ onMounted(load)
       <div class="flex flex-wrap items-end gap-3">
         <div>
           <label class="block text-sm font-medium text-teal-900/70 mb-1">方向</label>
-          <select v-model="direction" class="input">
+          <select v-model="direction" class="rounded-lg border border-teal-100 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10">
             <option v-for="d in DIRECTIONS" :key="d.value" :value="d.value">{{ d.label }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-teal-900/70 mb-1">关联简历（可选，AI 将针对性出题）</label>
+          <select v-model="resumeId" class="rounded-lg border border-teal-100 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10">
+            <option :value="null">不关联简历</option>
+            <option v-for="r in resumes" :key="r.id" :value="r.id">{{ r.filename }}</option>
           </select>
         </div>
         <div>

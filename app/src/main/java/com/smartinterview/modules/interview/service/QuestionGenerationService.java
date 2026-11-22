@@ -12,12 +12,15 @@ import com.smartinterview.modules.interview.model.InterviewQuestionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.model.QuestionDraft;
+import com.smartinterview.modules.interview.agent.ResumeInterviewTools;
 import com.smartinterview.modules.interview.repository.InterviewAnswerRepository;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
+import com.smartinterview.modules.resume.repository.ResumeRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -39,6 +42,7 @@ public class QuestionGenerationService {
   private final InterviewSessionRepository sessionRepository;
   private final InterviewQuestionRepository questionRepository;
   private final InterviewAnswerRepository answerRepository;
+  private final ResumeRepository resumeRepository;
   private final StructuredOutputInvoker outputInvoker;
   private final TransactionalExecutor transactionalExecutor;
   private final InterviewProperties properties;
@@ -55,12 +59,7 @@ public class QuestionGenerationService {
       sessionRepository.save(session);
     }
 
-    String prompt = PromptTemplates.render("question-generation", Map.of(
-        "direction", session.getDirection().getDescription(),
-        "difficulty", session.getDifficulty().getDescription(),
-        "count", properties.questionCount()));
-
-    List<QuestionDraft> drafts = outputInvoker.invoke(prompt, DRAFT_LIST_TYPE, this::callModel);
+    List<QuestionDraft> drafts = generateDrafts(session);
     if (drafts == null || drafts.isEmpty()) {
       throw new BusinessException(ErrorCode.TASK_FAILED, "题目生成结果为空");
     }
@@ -87,6 +86,40 @@ public class QuestionGenerationService {
       return null;
     });
     log.info("题目生成完成: sessionId={}, count={}", sessionId, drafts.size());
+  }
+
+  /**
+   * 出题草稿生成：关联简历的会话走 Agent 模式（模型自主查简历工具），
+   * 失败时降级为通用出题；未关联简历直接走通用出题。
+   */
+  private List<QuestionDraft> generateDrafts(InterviewSessionEntity session) {
+    if (session.getResumeId() != null) {
+      try {
+        String agentPrompt = PromptTemplates.render("resume-agent-questions", Map.of(
+            "direction", session.getDirection().getDescription(),
+            "difficulty", session.getDifficulty().getDescription(),
+            "count", properties.questionCount()));
+        var resumeTools = new ResumeInterviewTools(resumeRepository, session.getResumeId());
+        var drafts = outputInvoker.invoke(agentPrompt, DRAFT_LIST_TYPE,
+            p -> llmClientFactory.getChatClient()
+                .prompt()
+                .tools(resumeTools)
+                .user(p)
+                .call()
+                .content());
+        if (drafts != null && !drafts.isEmpty()) {
+          return drafts;
+        }
+        log.warn("Agent 出题结果为空，降级为通用出题: sessionId={}", session.getId());
+      } catch (BusinessException e) {
+        log.warn("Agent 出题失败，降级为通用出题: sessionId={}, {}", session.getId(), e.getMessage());
+      }
+    }
+    String prompt = PromptTemplates.render("question-generation", Map.of(
+        "direction", session.getDirection().getDescription(),
+        "difficulty", session.getDifficulty().getDescription(),
+        "count", properties.questionCount()));
+    return outputInvoker.invoke(prompt, DRAFT_LIST_TYPE, this::callModel);
   }
 
   private String callModel(String prompt) {

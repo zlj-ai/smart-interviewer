@@ -48,6 +48,7 @@ public class InterviewSessionService {
 
   private final InterviewSessionRepository repository;
   private final InterviewQuestionRepository questionRepository;
+  private final com.smartinterview.modules.resume.repository.ResumeRepository resumeRepository;
   private final InterviewSessionMapper mapper;
   private final RedisLockExecutor lockExecutor;
   private final RedissonClient redissonClient;
@@ -77,6 +78,13 @@ public class InterviewSessionService {
       entity.setRequestId(request.requestId());
       entity.setDirection(request.direction());
       entity.setDifficulty(request.difficulty());
+      if (request.resumeId() != null) {
+        // 简历归属校验：防跨用户挂载他人简历
+        resumeRepository.findById(request.resumeId())
+            .filter(r -> r.getUserId().equals(userId))
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "简历不存在"));
+        entity.setResumeId(request.resumeId());
+      }
       entity.setStatus(InterviewSessionStatus.CREATED);
       InterviewSessionEntity saved = repository.save(entity);
       cache.set(saved.getId(), CACHE_TTL);

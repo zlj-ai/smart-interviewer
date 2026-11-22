@@ -47,6 +47,12 @@ public class InterviewSessionEntity {
   @Column(nullable = false, length = 24)
   private InterviewSessionStatus status;
 
+  /**
+   * 关联简历（可选）：非空时出题进入 Agent 模式，模型通过工具自主查询候选人画像。
+   */
+  @Column(name = "resume_id")
+  private Long resumeId;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 

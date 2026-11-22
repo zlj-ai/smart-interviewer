@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 创建会话请求。requestId 由客户端生成，是幂等键（一次提交一个 ID）。
+ * resumeId 可选：提供时出题进入简历驱动的 Agent 模式。
  */
 public record CreateSessionRequest(
     @NotBlank
@@ -16,6 +17,8 @@ public record CreateSessionRequest(
     InterviewDirection direction,
 
     @NotNull(message = "难度不能为空")
-    InterviewDifficulty difficulty
+    InterviewDifficulty difficulty,
+
+    Long resumeId
 ) {
 }

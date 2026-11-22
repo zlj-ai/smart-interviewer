@@ -28,6 +28,7 @@ import com.smartinterview.modules.interview.model.InterviewSessionEntity;
 import com.smartinterview.modules.interview.model.InterviewSessionStatus;
 import com.smartinterview.modules.interview.repository.InterviewQuestionRepository;
 import com.smartinterview.modules.interview.repository.InterviewSessionRepository;
+import com.smartinterview.modules.resume.repository.ResumeRepository;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Duration;
 import java.time.Instant;
@@ -61,6 +62,8 @@ class InterviewSessionServiceTest {
   @Mock
   private InterviewQuestionRepository questionRepository;
   @Mock
+  private com.smartinterview.modules.resume.repository.ResumeRepository resumeRepository;
+  @Mock
   private RedissonClient redissonClient;
   @Mock
   private RBucket<Long> cacheBucket;
@@ -76,8 +79,9 @@ class InterviewSessionServiceTest {
     lenient().doReturn(cacheBucket).when(redissonClient).getBucket(anyString());
     lenient().when(redissonClient.getLock(anyString())).thenReturn(lock);
     service = new InterviewSessionService(repository, questionRepository,
-        new InterviewSessionMapperImpl(), new RedisLockExecutor(redissonClient),
-        redissonClient, taskProducer, new SimpleMeterRegistry());
+        resumeRepository, new InterviewSessionMapperImpl(),
+        new RedisLockExecutor(redissonClient), redissonClient, taskProducer,
+        new SimpleMeterRegistry());
   }
 
   private InterviewSessionEntity session(Long id) {
@@ -93,7 +97,7 @@ class InterviewSessionServiceTest {
   }
 
   private CreateSessionRequest request() {
-    return new CreateSessionRequest(REQUEST_ID, InterviewDirection.JAVA_BACKEND, InterviewDifficulty.MEDIUM);
+    return new CreateSessionRequest(REQUEST_ID, InterviewDirection.JAVA_BACKEND, InterviewDifficulty.MEDIUM, null);
   }
 
   @Nested

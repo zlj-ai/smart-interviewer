@@ -5,11 +5,13 @@ export async function createSession(
   requestId: string,
   direction: string,
   difficulty: string,
+  resumeId?: number,
 ): Promise<SessionResponse> {
   const res = await api.post<Result<SessionResponse>>('/interview/sessions', {
     requestId,
     direction,
     difficulty,
+    resumeId,
   })
   return res.data.data as SessionResponse
 }
