@@ -29,6 +29,11 @@ export const router = createRouter({
       component: () => import('@/pages/ResumePage.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: routes.stats,
+      component: () => import('@/pages/StatsPage.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 

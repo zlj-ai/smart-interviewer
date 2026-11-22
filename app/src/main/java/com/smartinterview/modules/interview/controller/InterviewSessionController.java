@@ -5,9 +5,11 @@ import com.smartinterview.common.result.Result;
 import com.smartinterview.common.security.SecurityUtils;
 import com.smartinterview.modules.interview.model.CreateSessionRequest;
 import com.smartinterview.modules.interview.model.QuestionResponse;
+import com.smartinterview.modules.interview.model.ScoreTrendItem;
 import com.smartinterview.modules.interview.model.SessionResponse;
 import com.smartinterview.modules.interview.service.InterviewReportService;
 import com.smartinterview.modules.interview.service.InterviewSessionService;
+import com.smartinterview.modules.interview.service.InterviewStatsService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -37,6 +39,7 @@ public class InterviewSessionController {
 
   private final InterviewSessionService sessionService;
   private final InterviewReportService reportService;
+  private final InterviewStatsService statsService;
 
   @PostMapping
   public Result<SessionResponse> create(@Valid @RequestBody CreateSessionRequest request) {
@@ -73,6 +76,12 @@ public class InterviewSessionController {
   @PostMapping("/{id}/questions/regenerate")
   public Result<SessionResponse> regenerate(@PathVariable Long id) {
     return Result.ok(sessionService.regenerateQuestions(id, SecurityUtils.requireCurrentUserId()));
+  }
+
+  /** 评分趋势：按会话聚合已评估回答的平均分（时间升序）。 */
+  @GetMapping("/stats/score-trend")
+  public Result<List<ScoreTrendItem>> scoreTrend() {
+    return Result.ok(statsService.getScoreTrend(SecurityUtils.requireCurrentUserId()));
   }
 
   @GetMapping("/{id}/questions")

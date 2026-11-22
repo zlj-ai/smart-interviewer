@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookOpen, Bot, FileText, LogOut, MessagesSquare } from 'lucide-vue-next'
+import { BookOpen, Bot, FileText, LogOut, MessagesSquare, TrendingUp } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 
 import { logout } from '@/api/auth'
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: routes.sessions, label: '面试', icon: MessagesSquare },
   { to: routes.knowledge, label: '知识库', icon: BookOpen },
   { to: routes.resume, label: '简历', icon: FileText },
+  { to: routes.stats, label: '统计', icon: TrendingUp },
 ]
 
 async function onLogout(): Promise<void> {

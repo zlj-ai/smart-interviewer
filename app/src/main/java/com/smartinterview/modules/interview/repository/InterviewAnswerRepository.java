@@ -2,6 +2,7 @@ package com.smartinterview.modules.interview.repository;
 
 import com.smartinterview.modules.interview.model.AnswerStatus;
 import com.smartinterview.modules.interview.model.InterviewAnswerEntity;
+import com.smartinterview.modules.interview.model.ScoreTrendView;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,21 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
   long countBySessionIdAndStatus(Long sessionId, AnswerStatus status);
 
   void deleteBySessionId(Long sessionId);
+
+  /**
+   * 评分趋势聚合：用户维度按会话聚合已评估回答的平均分（时间升序）。
+   */
+  @Query("""
+      SELECT s.id AS sessionId, s.direction AS direction,
+             AVG(a.score) AS avgScore, COUNT(a.id) AS evaluatedCount,
+             MIN(s.createdAt) AS sessionDate
+      FROM InterviewAnswerEntity a
+      JOIN InterviewSessionEntity s ON a.sessionId = s.id
+      WHERE a.userId = :userId AND a.status = com.smartinterview.modules.interview.model.AnswerStatus.EVALUATED
+      GROUP BY s.id, s.direction, s.createdAt
+      ORDER BY s.createdAt
+      """)
+  List<ScoreTrendView> findScoreTrendByUser(@Param("userId") Long userId);
 
   /**
    * fencing 回写：仅当 attempt 与任务携带值一致时才落结果。
