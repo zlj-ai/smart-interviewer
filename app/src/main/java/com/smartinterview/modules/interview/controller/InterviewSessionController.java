@@ -6,6 +6,7 @@ import com.smartinterview.common.security.SecurityUtils;
 import com.smartinterview.modules.interview.model.CreateSessionRequest;
 import com.smartinterview.modules.interview.model.QuestionResponse;
 import com.smartinterview.modules.interview.model.SessionResponse;
+import com.smartinterview.modules.interview.service.InterviewReportService;
 import com.smartinterview.modules.interview.service.InterviewSessionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -15,6 +16,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InterviewSessionController {
 
   private final InterviewSessionService sessionService;
+  private final InterviewReportService reportService;
 
   @PostMapping
   public Result<SessionResponse> create(@Valid @RequestBody CreateSessionRequest request) {
@@ -48,6 +54,20 @@ public class InterviewSessionController {
   @GetMapping("/{id}")
   public Result<SessionResponse> detail(@PathVariable Long id) {
     return Result.ok(sessionService.getSession(id, SecurityUtils.requireCurrentUserId()));
+  }
+
+  /**
+   * 面试报告 PDF 导出。二进制下载不走 Result 包装；
+   * 归属校验在 Service 内完成，越权时全局异常处理器兜底。
+   */
+  @GetMapping("/{id}/report.pdf")
+  public ResponseEntity<byte[]> report(@PathVariable Long id) {
+    byte[] pdf = reportService.generateReport(id, SecurityUtils.requireCurrentUserId());
+    String filename = "interview-report-" + id + ".pdf";
+    return ResponseEntity.status(HttpStatus.OK)
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(pdf);
   }
 
   @PostMapping("/{id}/questions/regenerate")

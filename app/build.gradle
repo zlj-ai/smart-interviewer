@@ -55,6 +55,10 @@ dependencies {
     // AWS S3 SDK - 对象存储（RustFS/MinIO 兼容协议，简历文件存取）
     implementation "software.amazon.awssdk:s3:2.29.51"
 
+    // iText 8 - 面试报告 PDF 导出（font-asian 提供 STSong 中文字体）
+    implementation "com.itextpdf:itext-core:8.0.5"
+    implementation "com.itextpdf:font-asian:8.0.5"
+
     // Redisson - Redis 客户端（缓存 / 分布式锁 / Stream）
     implementation 'org.redisson:redisson-spring-boot-starter:4.0.0'
 

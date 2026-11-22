@@ -2,6 +2,7 @@ package com.smartinterview.modules.interview.repository;
 
 import com.smartinterview.modules.interview.model.AnswerStatus;
 import com.smartinterview.modules.interview.model.InterviewAnswerEntity;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswerEntity, Long> {
 
   Optional<InterviewAnswerEntity> findByQuestionId(Long questionId);
+
+  List<InterviewAnswerEntity> findBySessionId(Long sessionId);
 
   long countBySessionIdAndStatus(Long sessionId, AnswerStatus status);
 

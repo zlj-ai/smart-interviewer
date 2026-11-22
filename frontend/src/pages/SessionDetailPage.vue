@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { Loader2, Lightbulb, Sparkles } from 'lucide-vue-next'
+import { Download, Loader2, Lightbulb, Sparkles } from 'lucide-vue-next'
 
+import { api } from '@/api/request'
 import { getAnswer, getSession, listQuestions, submitAnswer } from '@/api/sessions'
 import { regenerateQuestions } from '@/api/sessions'
 import StatusPill from '@/components/StatusPill.vue'
@@ -19,6 +20,7 @@ const answer = ref<AnswerResponse | null>(null)
 const polling = ref(false)
 const submitting = ref(false)
 const regenerating = ref(false)
+const exporting = ref(false)
 const error = ref('')
 
 const selectedQuestion = computed(
@@ -105,6 +107,26 @@ async function pollEvaluation(questionId: number): Promise<void> {
   }
 }
 
+async function exportReport(): Promise<void> {
+  exporting.value = true
+  error.value = ''
+  try {
+    const res = await api.get(`/interview/sessions/${sessionId}/report.pdf`, {
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(res.data as Blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `面试报告-${sessionId}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    error.value = '报告导出失败，请稍后重试'
+  } finally {
+    exporting.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -116,10 +138,19 @@ onMounted(load)
       <button
         v-if="session && (session.status === 'FAILED' || session.status === 'COMPLETED')"
         :disabled="regenerating"
-        class="ml-auto text-sm text-teal-700 border border-teal-200 rounded-lg px-3 py-1.5 transition hover:bg-teal-50 disabled:opacity-50"
+        class="text-sm text-teal-700 border border-teal-200 rounded-lg px-3 py-1.5 transition hover:bg-teal-50 disabled:opacity-50"
         @click="onRegenerate"
       >
         {{ regenerating ? '重新生成中…' : '重新生成题目' }}
+      </button>
+      <button
+        :disabled="exporting"
+        class="flex items-center gap-1 text-sm text-teal-700 border border-teal-200 rounded-lg px-3 py-1.5 transition hover:bg-teal-50 disabled:opacity-50"
+        @click="exportReport"
+      >
+        <Download v-if="!exporting" class="w-3.5 h-3.5" />
+        <Loader2 v-else class="w-3.5 h-3.5 animate-spin" />
+        导出报告 PDF
       </button>
     </div>
 

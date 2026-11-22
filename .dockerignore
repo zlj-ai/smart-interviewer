@@ -1,0 +1,24 @@
+# 敏感信息严禁进入镜像构建上下文（构建层会持久保留文件内容）
+.env
+.env.example
+*.local
+
+# 版本与文档
+.git
+.gitignore
+README.md
+docs
+
+# 前端（独立镜像构建）
+frontend
+
+# 构建产物与缓存
+build
+app/build
+.gradle
+**/build
+
+# 运行时产物
+logs
+*.log
+.workbuddy
